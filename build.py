@@ -1,10 +1,8 @@
-"""Build both deploy targets from src/app.html.
+"""Build the Cloudflare Worker from src/app.html.
 
-  python3 build.py            -> dist/cloudflare/worker.js   (paste into a Cloudflare Worker)
-                                 dist/netlify/                (drop this folder or its zip on Netlify)
-                                 dist/house-church-dinner-netlify.zip
+  python3 build.py   -> dist/cloudflare/worker.js (page + API in one file; deployed by Cloudflare from GitHub)
 """
-import json, os, shutil, zipfile
+import json, os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 def rd(*p): return open(os.path.join(ROOT, *p), encoding="utf-8").read()
@@ -18,7 +16,7 @@ split = app.index("</style>") + len("</style>")
 app_head, app_body = app[:split], app[split:]
 MARK = "<script>\n(function () {\n  var token;"
 
-def page(shim, extra_css, theme, patch_conflict):
+def page(shim, extra_css, theme, patch_conflict=False):
     body = app_body.replace(MARK, "<script>" + shim + "</script>\n" + MARK, 1)
     assert shim in body, "shim not injected"
     if patch_conflict:
@@ -40,18 +38,4 @@ hdr = ("// House Church Dinner: the whole app in one Cloudflare Worker (page + b
        "const HTML = " + json.dumps(cf_page) + ";\n")
 wr("dist/cloudflare/worker.js", hdr + rd("cloudflare", "backend.js"))
 
-# ---- Netlify: static page + one function using Netlify Blobs
-nl_page = page(rd("netlify", "shim.js"), ":root:root{--shelf:64px}", "#F0F7FD", True)
-shutil.rmtree(os.path.join(ROOT, "dist", "netlify"), ignore_errors=True)
-wr("dist/netlify/index.html", nl_page)
-wr("dist/netlify/netlify.toml", '[build]\n  publish = "."\n\n[functions]\n  directory = "netlify/functions"\n')
-wr("dist/netlify/netlify/functions/api.mjs", rd("netlify", "lib.part.mjs") + rd("netlify", "handler.part.mjs"))
-zpath = os.path.join(ROOT, "dist", "house-church-dinner-netlify.zip")
-if os.path.exists(zpath): os.remove(zpath)
-with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-    base = os.path.join(ROOT, "dist", "netlify")
-    for d, _, fs in os.walk(base):
-        for f in fs:
-            full = os.path.join(d, f)
-            z.write(full, os.path.relpath(full, base))
-print("built dist/cloudflare/worker.js, dist/netlify/, dist/house-church-dinner-netlify.zip")
+print("built dist/cloudflare/worker.js")

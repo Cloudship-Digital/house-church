@@ -1,0 +1,11 @@
+# Cloudflare deploys this repo with `npx wrangler deploy` (Workers Builds, Git connected to main).
+# dist/cloudflare/worker.js is committed, so no build step is needed on Cloudflare.
+name = "REPLACE_WITH_WORKER_NAME"
+main = "dist/cloudflare/worker.js"
+compatibility_date = "2025-07-01"
+
+# The D1 binding must be named exactly DB. Fill in the database id from Storage & databases > D1.
+[[d1_databases]]
+binding = "DB"
+database_name = "house-church"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"

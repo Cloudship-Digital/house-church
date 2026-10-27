@@ -1,7 +1,0 @@
-name = "hcd"
-main = "worker.js"
-compatibility_date = "2025-07-01"
-[[d1_databases]]
-binding = "DB"
-database_name = "hcd"
-database_id = "local"
