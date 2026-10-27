@@ -472,7 +472,11 @@ details[open] summary::after { content: "\2212"; }
 
 <nav class="tabs" aria-label="Sections">
   <div class="tabs-in">
-    <button type="button" class="tab" id="tab-bowls" aria-current="page">
+    <button type="button" class="tab" id="tab-sides">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>
+      <span>Sides Signup</span>
+    </button>
+    <button type="button" class="tab" id="tab-bowls">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M8 8c0-1.5 1-2 1-3.5M12 8c0-1.5 1-2 1-3.5M16 8c0-1.5 1-2 1-3.5"/></svg>
       <span>Oct 15 menu</span>
     </button>
@@ -483,10 +487,6 @@ details[open] summary::after { content: "\2212"; }
     <button type="button" class="tab" id="tab-ideas">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>
       <span>Food ideas</span>
-    </button>
-    <button type="button" class="tab" id="tab-sides">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>
-      <span>Sides Signup</span>
     </button>
     <button type="button" class="tab" id="tab-kids">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.700 6 6"/><circle cx="17.500" cy="9.500" r="2.200"/><path d="M16.500 14.200c2.700.2 4.500 2.200 4.500 5.300"/></svg>
@@ -1354,7 +1354,11 @@ details[open] summary::after { content: "\2212"; }
   function renderSideList(claim) {
     var active = document.activeElement;
     var hadFocus = !!(active && active.classList && active.classList.contains("side-input"));
-    var items = SIDES.items.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    var items = SIDES.items.slice().sort(function (a, b) {
+      var ta = a.name ? 1 : 0, tb = b.name ? 1 : 0; /* open items first, claimed (green) last */
+      if (ta !== tb) return ta - tb;
+      return (a.order || 0) - (b.order || 0);
+    });
     var manage = !env.readOnly;
     el.list.textContent = "";
     var filled = 0;
@@ -1989,8 +1993,8 @@ details[open] summary::after { content: "\2212"; }
   try {
     var h0 = location.hash.replace("#", "");
     if (!bowlsLive && h0 === "bowls") h0 = "";
-    show(VIEWS[h0] ? h0 : (bowlsLive ? "bowls" : "mains"), true);
-  } catch (e) { show(bowlsLive ? "bowls" : "mains", true); }
+    show(VIEWS[h0] ? h0 : "sides", true);
+  } catch (e) { show("sides", true); }
 
   /* The list is computed from today's date, so reload when the phone wakes on a new day. */
   document.addEventListener("visibilitychange", function () {
