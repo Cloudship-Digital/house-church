@@ -727,12 +727,11 @@ details[open] summary::after { content: "\2212"; }
         r.go.disabled = S.busy;
         r.go.textContent = S.busy ? "Saving..." : "Sign up";
         var mineOk = isTaken && isMine(c) && !env.readOnly;
-        var manageOk = isTaken && !!r.sidesBtn && !env.readOnly && (env.isAdmin || isMine(c));
-        var seeOk = isTaken && !!r.sidesBtn;
+        var seeOk = !!r.sidesBtn; /* sides are open for every Thursday, with or without a main */
         r.undo.hidden = !mineOk;
         if (r.sidesBtn) {
           r.sidesBtn.hidden = !seeOk;
-          r.sidesBtn.textContent = manageOk ? "Set up sides" : "See sides";
+          r.sidesBtn.textContent = "Sides: add or claim";
         }
         r.mine.hidden = !(mineOk || seeOk);
       });
