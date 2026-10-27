@@ -258,7 +258,7 @@ details[open] summary::after { content: "\2212"; }
   min-height: 58px;
   padding: 6px 4px;
   color: var(--muted);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -483,6 +483,10 @@ details[open] summary::after { content: "\2212"; }
     <button type="button" class="tab" id="tab-ideas">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>
       <span>Food ideas</span>
+    </button>
+    <button type="button" class="tab" id="tab-sides">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>
+      <span>Sides</span>
     </button>
     <button type="button" class="tab" id="tab-kids">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.700 6 6"/><circle cx="17.500" cy="9.500" r="2.200"/><path d="M16.500 14.200c2.700.2 4.500 2.200 4.500 5.300"/></svg>
@@ -1952,13 +1956,13 @@ details[open] summary::after { content: "\2212"; }
 
   /* ---------- screens and tab bar ---------- */
   var VIEWS = { bowls: document.getElementById("view-bowls"), mains: document.getElementById("view-mains"), ideas: document.getElementById("view-ideas"), kids: document.getElementById("view-kids"), sides: document.getElementById("view-sides") };
-  var TABS = { bowls: document.getElementById("tab-bowls"), mains: document.getElementById("tab-mains"), ideas: document.getElementById("tab-ideas"), kids: document.getElementById("tab-kids") };
+  var TABS = { bowls: document.getElementById("tab-bowls"), mains: document.getElementById("tab-mains"), ideas: document.getElementById("tab-ideas"), sides: document.getElementById("tab-sides"), kids: document.getElementById("tab-kids") };
   var bowlsLive = todayIso <= "2026-10-15";
   if (!bowlsLive) TABS.bowls.style.display = "none";
   function show(which, quiet) {
     Object.keys(VIEWS).forEach(function (k) {
       VIEWS[k].hidden = k !== which;
-      var tabOwner = which === "sides" ? "mains" : which;
+      var tabOwner = which;
       if (TABS[k]) {
         if (k === tabOwner) TABS[k].setAttribute("aria-current", "page");
         else TABS[k].removeAttribute("aria-current");
