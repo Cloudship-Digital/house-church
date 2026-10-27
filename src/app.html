@@ -1,0 +1,2126 @@
+<title>House Church Dinner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: app name bar on top, one screen at a time, three-tab bar fixed at the bottom (thumb zone): Oct 15 menu (yumm bowls), Sign up (next 6 Thursday mains; sides open from there), and Ideas (10 easy mains plus ideas from the group). */
+:root {
+  --bg: #F0F7FD;
+  --surface: #FFFFFF;
+  --fg: #1B2F44;
+  --muted: #52697F;
+  --line: #D4E4F2;
+  --accent: #2C8556;
+  --blue: #2872B3;
+  --accent-fg: #FFFFFF;
+  --accent-soft: #E3F3EA;
+  --taken: #E3F3EA;
+  --shelf: 0px;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101A24;
+    --surface: #182532;
+    --fg: #E6EEF6;
+    --muted: #9DB0C2;
+    --line: #2A3D50;
+    --accent: #6BC48C;
+    --blue: #7DB5E8;
+  --accent-fg: #0E1A12;
+    --accent-soft: #1F3A2C;
+    --taken: #1D3226;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101A24;
+  --surface: #182532;
+  --fg: #E6EEF6;
+  --muted: #9DB0C2;
+  --line: #2A3D50;
+  --accent: #6BC48C;
+  --blue: #7DB5E8;
+  --accent-fg: #0E1A12;
+  --accent-soft: #1F3A2C;
+  --taken: #1D3226;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-inline: 16px;
+  padding-block: 4px calc(104px + var(--shelf));
+}
+main { max-width: 560px; margin-inline: auto; }
+.appbar { max-width: 560px; margin-inline: auto; padding-block: 14px 10px; }
+.appname { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; letter-spacing: -0.005em; color: var(--blue); }
+.view { display: flex; flex-direction: column; gap: 20px; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+h1:focus { outline: none; }
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.2;
+  margin: 0;
+}
+.lede { margin: 8px 0 0; color: var(--muted); max-width: 44ch; }
+.mainline { margin: 14px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+.mainline .k { display: block; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.progress { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.meter { display: grid; grid-template-columns: repeat(var(--n, 10), 1fr); gap: 4px; }
+.meter span { height: 10px; border-radius: 3px; background: var(--line); transition: background 0.2s; }
+.meter span.on { background: var(--accent); }
+.count { margin: 0; font-size: 0.875rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.count strong { color: var(--fg); font-weight: 600; }
+ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+li.taken { background: var(--taken); }
+#bowls-other-list { margin-top: 8px; }
+.row {
+  all: unset;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.row[aria-disabled="true"] { cursor: default; }
+.row:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible, .act:focus-visible, .chip:focus-visible, summary:focus-visible, .tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.label { font-weight: 600; min-width: 0; overflow-wrap: break-word; }
+.label .sub { display: block; font-weight: 500; font-size: 0.8125rem; color: var(--muted); }
+.status { display: flex; align-items: center; justify-content: flex-end; gap: 8px; max-width: 12.5rem; min-width: 0; font-size: 0.9375rem; color: var(--muted); text-align: right; }
+.status.taken { color: var(--fg); }
+.whotext { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.dish { font-size: 0.8125rem; color: var(--muted); }
+.plus { position: relative; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--accent); }
+.plus::before, .plus::after { content: ""; position: absolute; background: var(--accent); left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.plus::before { width: 12px; height: 2px; }
+.plus::after { width: 2px; height: 12px; }
+.tick { position: relative; flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); }
+.tick::after { content: ""; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px; border: solid var(--accent-fg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.tick.sm { width: 16px; height: 16px; }
+.tick.sm::after { left: 5px; top: 2px; width: 4px; height: 8px; }
+.claim { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 16px; }
+.claim input, .add input, select {
+  flex: 1 1 180px;
+  min-width: 0;
+  min-height: 44px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.claim input.wide { flex-basis: 100%; }
+.line { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 44px; width: 100%; min-width: 0; }
+.hint { flex-basis: 100%; margin: -2px 0 0; font-size: 0.8125rem; color: var(--muted); }
+.btn {
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.btn.quiet { background: transparent; color: var(--fg); border-color: var(--line); font-weight: 500; }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.mine { padding: 0 16px 6px; margin-top: -6px; display: flex; flex-wrap: wrap; column-gap: 20px; }
+.act {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 2px;
+  font-size: 0.9375rem;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.act.strong { color: var(--accent); font-weight: 600; }
+.note { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: 0.9375rem; }
+.fine { margin: 0; font-size: 0.875rem; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.panel p { margin: 0; color: var(--muted); max-width: 48ch; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .cap { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.field select { flex: none; width: 100%; }
+.pick { margin-top: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.chip:disabled { opacity: 0.55; cursor: default; }
+.chip.done, .chip.done:disabled { opacity: 1; background: var(--accent-soft); border-color: var(--accent); }
+.add { display: flex; flex-wrap: wrap; gap: 8px; }
+.empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 0.9375rem; }
+.section { display: flex; flex-direction: column; gap: 14px; }
+.section > p { margin: 0; color: var(--muted); max-width: 48ch; }
+.facts { margin: 0; padding: 12px 14px; border-left: 3px solid var(--accent); display: flex; flex-direction: column; gap: 6px; font-size: 0.9375rem; }
+.facts p { margin: 0; }
+.meals { display: flex; flex-direction: column; gap: 8px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 14px 16px;
+  border-radius: 10px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--muted); font-size: 1.25rem; line-height: 1.2; flex: none; }
+details[open] summary::after { content: "\2212"; }
+.host-sum { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; }
+.host-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 16px; }
+.sum { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.name { font-weight: 600; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: var(--taken); color: var(--muted); }
+.meal-body { margin: 0; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.meal-body dt { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.meal-body dd { margin: 2px 0 0; }
+.sources { font-size: 0.8125rem; color: var(--muted); margin: 0; }
+.sources a { color: var(--muted); text-underline-offset: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--shelf);
+  z-index: 5;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tabs::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: var(--shelf); background: var(--bg); border-top: 1px solid var(--line); }
+.tabs-in { max-width: 560px; margin-inline: auto; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.tab {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 58px;
+  padding: 6px 4px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab[aria-current="page"] { color: var(--accent); }
+.tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(74px + var(--shelf) + env(safe-area-inset-bottom, 0px));
+  z-index: 6;
+  max-width: 420px;
+  margin-inline: auto;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast.show { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .meter span, .toast { transition: none; }
+}
+</style>
+
+<div class="appbar"><span class="appname">House Church Dinner</span></div>
+
+<main>
+  <section class="view" id="view-bowls">
+    <header>
+      <h1 tabindex="-1">Oct 15: yumm bowls</h1>
+      <p class="lede">This Thursday is yumm bowl night. Everyone brings one ingredient. Tap one to claim it. This tab goes away after the dinner.</p>
+      <div class="progress">
+        <div class="meter" id="meter-bowls" aria-hidden="true"></div>
+        <p class="count" id="count-bowls" aria-live="polite">Loading sign-ups</p>
+      </div>
+    </header>
+    <p class="note" id="note-bowls" hidden></p>
+    <ul id="list-bowls"></ul>
+    <ul id="bowls-other-list">
+      <li id="bowls-other-li">
+        <button type="button" class="row" id="bowls-other-row" aria-expanded="false">
+          <span class="label">Other<span class="sub">Bringing something not on the list</span></span>
+          <span class="status open"><span class="plus" aria-hidden="true"></span><span class="sr">Tap to add</span></span>
+        </button>
+        <form class="claim" id="bowls-other-form" hidden>
+          <label class="sr" for="bowls-other-name">Your name</label>
+          <input id="bowls-other-name" type="text" placeholder="Your name" maxlength="60" autocomplete="name" autocapitalize="words" enterkeyhint="next">
+          <label class="sr" for="bowls-other-what">What are you bringing</label>
+          <input id="bowls-other-what" type="text" class="wide" placeholder="What are you bringing? Like guacamole" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+          <button type="submit" class="btn" id="bowls-other-go">Sign up</button>
+          <button type="button" class="btn quiet" id="bowls-other-cancel">Cancel</button>
+        </form>
+      </li>
+    </ul>
+  </section>
+
+  <section class="view" id="view-mains" hidden>
+    <header>
+      <h1 tabindex="-1">Sign up for a Thursday</h1>
+      <p class="lede">One couple brings the main dish, already cooked, to the host home. Everyone else brings sides. The next six Thursdays are open below.</p>
+      <div class="progress">
+        <div class="meter" id="meter-mains" aria-hidden="true"></div>
+        <p class="count" id="count-mains" aria-live="polite">Loading sign-ups</p>
+      </div>
+      <button type="button" class="act strong" id="to-sides">Add or claim sides for any Thursday</button>
+      <button type="button" class="act strong" id="to-ideas">Browse 10 easy main dish ideas</button>
+    </header>
+    <p class="note" id="note-mains" hidden></p>
+    <ul id="list-mains"></ul>
+
+  </section>
+
+  <section class="view" id="view-kids" hidden>
+    <header>
+      <h1 tabindex="-1">Watch the kids</h1>
+      <p class="lede">Two people watch the kids each Thursday while the group meets. Tap a spot to sign up.</p>
+      <div class="progress">
+        <div class="meter" id="meter-kids" aria-hidden="true"></div>
+        <p class="count" id="count-kids" aria-live="polite">Loading sign-ups</p>
+      </div>
+    </header>
+    <p class="note" id="note-kids" hidden></p>
+    <ul id="list-kids"></ul>
+  </section>
+
+  <section class="view" id="view-ideas" hidden>
+    <div class="section" id="inspiration">
+      <header>
+        <h1 tabindex="-1">Main dish ideas</h1>
+        <p class="lede">Ten easy meals that feed about 15 people and hold up on a buffet table. Tap one to see the amounts, how to get it there, and sides that go with it. Add your own idea too.</p>
+      </header>
+      <p class="note" id="note-ideas" hidden></p>
+      <details id="idea-add">
+        <summary class="host-sum">Add your idea</summary>
+        <form class="host-body" id="idea-form">
+          <div class="field">
+            <label for="idea-name">Dish name</label>
+            <input id="idea-name" class="line" type="text" maxlength="80" placeholder="Chicken tortilla soup" autocomplete="off" autocapitalize="sentences" enterkeyhint="next">
+          </div>
+          <div class="field">
+            <label for="idea-note">Why it works or how to bring it (optional)</label>
+            <input id="idea-note" class="line" type="text" maxlength="200" placeholder="Slow cooker, serves 15" autocomplete="off" autocapitalize="sentences" enterkeyhint="next">
+          </div>
+          <div class="field">
+            <label for="idea-who">Your name</label>
+            <input id="idea-who" class="line" type="text" maxlength="60" placeholder="Your name" autocomplete="name" autocapitalize="words" enterkeyhint="done">
+          </div>
+          <div><button type="submit" class="btn" id="idea-go">Add idea</button></div>
+        </form>
+      </details>
+      <div class="meals" id="meals"></div>
+      <div class="section" id="group-ideas" hidden>
+        <h2>From the group</h2>
+        <div class="meals" id="group-list"></div>
+      </div>
+      <p class="sources">Ideas and portions drawn from
+        <a href="https://aisleprompt.com/blog/easy-dinner-ideas-crowd-20-recipes-menu-10-12-people" target="_blank" rel="noopener">Aisle Prompt</a>,
+        <a href="https://easyfamilyrecipes.com/dinner-ideas-for-a-large-group/" target="_blank" rel="noopener">Easy Family Recipes</a>,
+        <a href="https://www.thescramble.com/feeding-a-crowd-without-ordering-pizza/" target="_blank" rel="noopener">The Scramble</a>,
+        <a href="https://alwaysusebutter.com/39-make-ahead-potluck-recipes-that-travel-well/" target="_blank" rel="noopener">Always Use Butter</a>, and
+        <a href="https://homebodyeats.com/food-quantity-guide/" target="_blank" rel="noopener">Homebody Eats</a>.
+        Amounts for 15 are scaled up from those guides and are a starting point. The carrying notes are general advice.</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-sides" hidden>
+    <header>
+      <button type="button" class="act" id="sides-back">Back to sign up</button>
+      <h1 tabindex="-1">Thursday sides</h1>
+      <div class="field pick">
+        <label for="sides-pick">Showing sides for</label>
+        <select id="sides-pick"></select>
+      </div>
+      <p class="mainline" id="sides-main" hidden></p>
+      <div class="progress" id="sides-progress" hidden>
+        <p class="count" id="count-sides" aria-live="polite"></p>
+      </div>
+    </header>
+    <p class="note" id="note-sides" hidden></p>
+
+    <div class="panel" id="sides-wait" hidden>
+      <h3 id="sides-wait-title">No one has the main yet.</h3>
+      <p>You do not have to wait. Anyone can add a side to the list below, and anyone can claim one.</p>
+      <button type="button" class="btn quiet" id="go-mains-wait">Sign up for the main</button>
+    </div>
+
+    <details id="host" hidden>
+      <summary class="host-sum">Add to the list</summary>
+      <div class="host-body">
+        <div class="facts">
+          <p>Plan 6 to 8 oz of cooked meat per adult, which is about 6 to 7 lb for 15 people.</p>
+          <p>Count 1 cup of cooked pasta per person. Kids eat about 60 percent of an adult portion.</p>
+          <p>Plan one to two side servings per person, so 15 to 30 in all.</p>
+          <p>Your main arrives already cooked, so wrap pans in foil and towels or use an insulated carrier. Keep hot food above 140 degrees, and do not let it sit out more than two hours.</p>
+        </div>
+        <form class="field" id="add-form">
+          <label for="add-input">Add sides to the list</label>
+          <div class="add">
+            <input id="add-input" type="text" placeholder="Type an item, like bread" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+            <button type="submit" class="btn" id="add-btn">Add to list</button>
+          </div>
+        </form>
+        <form class="field" id="dish-form">
+          <label for="dish-input">Your meal</label>
+          <div class="add">
+            <input id="dish-input" type="text" placeholder="Type your meal here" maxlength="80" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" list="meal-names">
+            <button type="submit" class="btn quiet" id="dish-btn">Save</button>
+          </div>
+          <p class="hint" style="margin:0">Side suggestions appear as you type. Save sets the dinner name everyone sees.</p>
+        </form>
+        <div class="field" id="suggest-field">
+          <span class="cap" id="idea-hint">Suggested sides</span>
+          <div class="chips" id="idea-chips" aria-labelledby="idea-hint"></div>
+          <div><button type="button" class="btn quiet" id="add-all" hidden>Add all suggested</button></div>
+        </div>
+        <div class="field">
+          <span class="cap">Round out the table</span>
+          <div class="chips" id="generic-chips"></div>
+        </div>
+      </div>
+    </details>
+
+    <ul id="list-sides"></ul>
+    <p class="empty" id="sides-none" hidden></p>
+
+    <ul id="other-list" hidden>
+      <li id="other-li">
+        <button type="button" class="row" id="other-row" aria-expanded="false">
+          <span class="label">Other<span class="sub">Bringing something not on the list</span></span>
+          <span class="status open" id="other-status"><span class="plus" aria-hidden="true"></span><span class="sr">Tap to add</span></span>
+        </button>
+        <form class="claim" id="other-form" hidden>
+          <label class="sr" for="other-name">Your name</label>
+          <input id="other-name" type="text" placeholder="Your name" maxlength="60" autocomplete="name" autocapitalize="words" enterkeyhint="next">
+          <label class="sr" for="other-what">What are you bringing</label>
+          <input id="other-what" type="text" class="wide" placeholder="What are you bringing? Like ice" maxlength="60" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">
+          <button type="submit" class="btn" id="other-go">Sign up</button>
+          <button type="button" class="btn quiet" id="other-cancel">Cancel</button>
+        </form>
+      </li>
+    </ul>
+    <p class="fine" id="sides-fine" hidden>Only the hosts can change this list.</p>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs-in">
+    <button type="button" class="tab" id="tab-bowls" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z"/><path d="M8 8c0-1.5 1-2 1-3.5M12 8c0-1.5 1-2 1-3.5M16 8c0-1.5 1-2 1-3.5"/></svg>
+      <span>Oct 15 menu</span>
+    </button>
+    <button type="button" class="tab" id="tab-mains">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      <span>Sign up</span>
+    </button>
+    <button type="button" class="tab" id="tab-ideas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>
+      <span>Food ideas</span>
+    </button>
+    <button type="button" class="tab" id="tab-kids">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.700 6 6"/><circle cx="17.500" cy="9.500" r="2.200"/><path d="M16.500 14.200c2.700.2 4.500 2.200 4.500 5.300"/></svg>
+      <span>Kids</span>
+    </button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  var token;
+  try { token = localStorage.getItem("yumm-token"); } catch (e) {}
+  if (!token) {
+    token = "t" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    try { localStorage.setItem("yumm-token", token); } catch (e) {}
+  }
+  var mem = { person: "", couple: "" };
+  ["person", "couple"].forEach(function (k) {
+    try { mem[k] = localStorage.getItem("hcd-name-" + k) || ""; } catch (e) {}
+  });
+  function remember(kind, name) {
+    mem[kind] = name;
+    try { localStorage.setItem("hcd-name-" + kind, name); } catch (e) {}
+  }
+
+  var MSG_VIEW_ONLY = "You can look at this page, but you cannot sign up yet. Ask the person who shared it to give you access.";
+  var env = { db: null, readOnly: false, myId: null, isAdmin: false };
+  var sheets = [];
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  var renderSides = function () {};
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 3800);
+  }
+  function showNote(msg) {
+    ["note-bowls", "note-mains", "note-sides", "note-ideas", "note-kids"].forEach(function (id) {
+      var n = document.getElementById(id);
+      n.textContent = msg;
+      n.hidden = false;
+    });
+  }
+  function repaintAll() {
+    sheets.forEach(function (s) { s.paint(); });
+    renderSides();
+    paintIdeas();
+  }
+  function isMine(c) {
+    return !!c && (c.by === token || (!!env.myId && c.byUser === env.myId));
+  }
+  function setStatus(node, kind, text, sub) {
+    node.textContent = "";
+    node.className = "status " + kind;
+    if (kind === "open") {
+      var p = document.createElement("span");
+      p.className = "plus";
+      p.setAttribute("aria-hidden", "true");
+      node.appendChild(p);
+      var s = document.createElement("span");
+      s.className = "sr";
+      s.textContent = text;
+      node.appendChild(s);
+    } else if (kind === "taken") {
+      var t = document.createElement("span");
+      t.className = "tick";
+      t.setAttribute("aria-hidden", "true");
+      node.appendChild(t);
+      var w = document.createElement("span");
+      w.className = "whotext";
+      var nm = document.createElement("span");
+      nm.textContent = text;
+      w.appendChild(nm);
+      if (sub) {
+        var d = document.createElement("span");
+        d.className = "dish";
+        d.textContent = sub;
+        w.appendChild(d);
+      }
+      node.appendChild(w);
+    } else {
+      node.textContent = text;
+    }
+  }
+
+  /* ---------- generic sign-up sheet (fixed list of spots) ---------- */
+  function makeSheet(cfg) {
+    var S = { claims: {}, loaded: false, openId: null, busy: false, rows: {} };
+    var listEl = document.getElementById("list-" + cfg.key);
+    var meterEl = document.getElementById("meter-" + cfg.key);
+    var countEl = document.getElementById("count-" + cfg.key);
+
+    meterEl.style.setProperty("--n", String(cfg.items.length));
+    cfg.items.forEach(function () { meterEl.appendChild(document.createElement("span")); });
+
+    cfg.items.forEach(function (item) {
+      var li = document.createElement("li");
+
+      var row = document.createElement("button");
+      row.type = "button";
+      row.className = "row";
+      row.setAttribute("aria-expanded", "false");
+      var label = document.createElement("span");
+      label.className = "label";
+      label.textContent = item.label;
+      if (item.sub) {
+        var sub = document.createElement("span");
+        sub.className = "sub";
+        sub.textContent = item.sub;
+        label.appendChild(sub);
+      }
+      var status = document.createElement("span");
+      status.className = "status";
+      row.appendChild(label);
+      row.appendChild(status);
+
+      var form = document.createElement("form");
+      form.className = "claim";
+      form.hidden = true;
+      var nameId = cfg.key + "-name-" + item.id;
+      var lab = document.createElement("label");
+      lab.className = "sr";
+      lab.setAttribute("for", nameId);
+      lab.textContent = cfg.nameLabel + " for " + item.label;
+      var input = document.createElement("input");
+      input.id = nameId;
+      input.type = "text";
+      input.placeholder = cfg.namePlaceholder;
+      input.autocomplete = cfg.hasDish ? "off" : "name";
+      input.setAttribute("autocapitalize", "words");
+      input.setAttribute("enterkeyhint", cfg.hasDish ? "next" : "done");
+      input.maxLength = 60;
+      form.appendChild(lab);
+      form.appendChild(input);
+      var dish = null;
+      if (cfg.hasDish) {
+        var dishId = cfg.key + "-dish-" + item.id;
+        var lab2 = document.createElement("label");
+        lab2.className = "sr";
+        lab2.setAttribute("for", dishId);
+        lab2.textContent = "Main dish for " + item.label + " (optional)";
+        dish = document.createElement("input");
+        dish.id = dishId;
+        dish.type = "text";
+        dish.className = "wide";
+        dish.placeholder = "What are you making? (optional)";
+        dish.autocomplete = "off";
+        dish.setAttribute("list", "meal-names");
+        dish.setAttribute("autocapitalize", "sentences");
+        dish.setAttribute("enterkeyhint", "done");
+        dish.maxLength = 80;
+        var hint = document.createElement("p");
+        hint.className = "hint";
+        hint.textContent = "Pick from the ideas as you type and we will suggest sides to match.";
+        form.appendChild(lab2);
+        form.appendChild(dish);
+        form.appendChild(hint);
+      }
+      var go = document.createElement("button");
+      go.type = "submit";
+      go.className = "btn";
+      go.textContent = "Sign up";
+      var cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "btn quiet";
+      cancel.textContent = "Cancel";
+      form.appendChild(go);
+      form.appendChild(cancel);
+
+      var mine = document.createElement("div");
+      mine.className = "mine";
+      mine.hidden = true;
+      var undo = document.createElement("button");
+      undo.type = "button";
+      undo.className = "act";
+      undo.textContent = "Remove my name";
+      var sidesBtn = null;
+      if (cfg.onSides) {
+        sidesBtn = document.createElement("button");
+        sidesBtn.type = "button";
+        sidesBtn.className = "act strong";
+        sidesBtn.textContent = "Set up sides";
+        sidesBtn.hidden = true;
+        sidesBtn.addEventListener("click", function () { cfg.onSides(item); });
+        mine.appendChild(sidesBtn);
+      }
+      mine.appendChild(undo);
+
+      li.appendChild(row);
+      li.appendChild(form);
+      li.appendChild(mine);
+      listEl.appendChild(li);
+
+      S.rows[item.id] = { item: item, li: li, row: row, status: status, form: form, input: input, dish: dish, go: go, mine: mine, undo: undo, sidesBtn: sidesBtn };
+
+      row.addEventListener("click", function () {
+        if (!S.loaded || env.readOnly || S.claims[item.id]) return;
+        S.openId = S.openId === item.id ? null : item.id;
+        S.paint();
+        if (S.openId === item.id) {
+          if (!input.value) input.value = mem[cfg.nameKind];
+          input.focus();
+        }
+      });
+      cancel.addEventListener("click", function () { S.openId = null; S.paint(); });
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var name = input.value.replace(/\s+/g, " ").trim();
+        if (!name) { input.focus(); return; }
+        var dishText = dish ? dish.value.replace(/\s+/g, " ").trim() : "";
+        claim(item, name, dishText);
+      });
+      undo.addEventListener("click", function () { release(item); });
+    });
+
+    S.paint = function () {
+      var filled = 0;
+      cfg.items.forEach(function (item, idx) {
+        var r = S.rows[item.id];
+        var c = S.claims[item.id];
+        var isTaken = !!c;
+        if (isTaken) filled++;
+        r.li.classList.toggle("taken", isTaken);
+        meterEl.children[idx].className = isTaken ? "on" : "";
+        if (!S.loaded) {
+          setStatus(r.status, "plain", "");
+        } else if (isTaken) {
+          var parts = cfg.statusFor(c);
+          setStatus(r.status, "taken", parts[0], parts[1]);
+        } else if (env.readOnly) {
+          setStatus(r.status, "plain", "Open");
+        } else {
+          setStatus(r.status, "open", "Open, tap to claim");
+        }
+        var expanded = S.openId === item.id && !isTaken && !env.readOnly;
+        r.row.setAttribute("aria-expanded", expanded ? "true" : "false");
+        r.row.setAttribute("aria-disabled", (!S.loaded || env.readOnly || isTaken) ? "true" : "false");
+        r.form.hidden = !expanded;
+        r.go.disabled = S.busy;
+        r.go.textContent = S.busy ? "Saving..." : "Sign up";
+        var mineOk = isTaken && isMine(c) && !env.readOnly;
+        var manageOk = isTaken && !!r.sidesBtn && !env.readOnly && (env.isAdmin || isMine(c));
+        var seeOk = isTaken && !!r.sidesBtn;
+        r.undo.hidden = !mineOk;
+        if (r.sidesBtn) {
+          r.sidesBtn.hidden = !seeOk;
+          r.sidesBtn.textContent = manageOk ? "Set up sides" : "See sides";
+        }
+        r.mine.hidden = !(mineOk || seeOk);
+      });
+      if (S.loaded) {
+        countEl.textContent = "";
+        var strong = document.createElement("strong");
+        strong.textContent = filled + " of " + cfg.items.length;
+        countEl.appendChild(strong);
+        countEl.appendChild(document.createTextNode(filled === cfg.items.length ? cfg.allDone : cfg.countTail));
+      }
+    };
+
+    S.openForm = function (id) {
+      var r = S.rows[id];
+      if (!r || S.claims[id] || env.readOnly || !S.loaded) return;
+      S.openId = id;
+      S.paint();
+      if (!r.input.value) r.input.value = mem[cfg.nameKind];
+      try { r.li.scrollIntoView({ block: "center" }); } catch (e) {}
+      setTimeout(function () { try { r.input.focus({ preventScroll: true }); } catch (e) {} }, 60);
+    };
+
+    async function claim(item, name, dishText) {
+      if (!env.db || S.busy) return;
+      S.busy = true;
+      S.paint();
+      var ref = env.db.doc(cfg.collection + "/" + item.id);
+      try {
+        var lease = await ref.acquire({ holder: token, ttlMs: 4000 });
+        if (!lease.acquired) {
+          toast("Someone is signing up for " + cfg.nounFor(item) + " right now. Try again in a few seconds.");
+          return;
+        }
+        var cur = await ref.get();
+        var data = cur.exists ? cur.data() : null;
+        if (data && data.name) {
+          toast(cfg.nounFor(item, true) + " was just taken by " + data.name + ". Pick another.");
+          S.openId = null;
+          return;
+        }
+        var doc = { item: item.label, name: name, by: token, at: Date.now() };
+        if (env.myId) doc.byUser = env.myId;
+        if (cfg.hasDish) { doc.dish = dishText; doc.date = item.id; }
+        await ref.set(doc);
+        S.claims[item.id] = doc;
+        remember(cfg.nameKind, name);
+        S.rows[item.id].input.value = "";
+        if (S.rows[item.id].dish) S.rows[item.id].dish.value = "";
+        S.openId = null;
+        toast(cfg.thanks(name, item));
+        if (cfg.onClaimed) cfg.onClaimed(item);
+      } catch (e) {
+        if (e && e.code === "invalid_argument") {
+          env.readOnly = true;
+          showNote(MSG_VIEW_ONLY);
+          repaintAll();
+        } else {
+          toast("That did not save. Check your connection and try again.");
+        }
+      } finally {
+        S.busy = false;
+        S.paint();
+      }
+    }
+
+    async function release(item) {
+      if (!env.db || S.busy) return;
+      var c = S.claims[item.id];
+      if (!c || !isMine(c)) return;
+      S.busy = true;
+      try {
+        await env.db.doc(cfg.collection + "/" + item.id).delete();
+        toast(cfg.nounFor(item, true) + " is open again.");
+      } catch (e) {
+        toast("That did not save. Try again.");
+      } finally {
+        S.busy = false;
+        S.paint();
+      }
+    }
+
+    S.start = function (db) {
+      db.collection(cfg.collection).onSnapshot(function (snap) {
+        var next = {};
+        snap.docs.forEach(function (d) {
+          var v = d.data();
+          if (v && v.name && S.rows[d.id]) next[d.id] = v;
+        });
+        S.claims = next;
+        S.loaded = true;
+        S.paint();
+        if (cfg.onChange) cfg.onChange();
+      }, function () {
+        S.loaded = true;
+        env.readOnly = true;
+        showNote("Sign-ups cannot load right now. Reload the page to try again.");
+        repaintAll();
+      });
+    };
+    S.settle = function () { S.loaded = true; S.paint(); if (cfg.onChange) cfg.onChange(); };
+
+    sheets.push(S);
+    return S;
+  }
+
+  /* ---------- sheet 1: yumm bowl ingredients ---------- */
+  makeSheet({
+    key: "bowls",
+    collection: "slots",
+    nameKind: "person",
+    items: [
+      { id: "chicken", label: "Chicken" },
+      { id: "rice", label: "Rice" },
+      { id: "sweet-potatoes", label: "Sweet potatoes" },
+      { id: "black-beans", label: "Black beans" },
+      { id: "salsa", label: "Salsa" },
+      { id: "cooked-kale", label: "Cooked kale" },
+      { id: "sliced-cabbage", label: "Sliced cabbage" },
+      { id: "cilantro", label: "Cilantro" },
+      { id: "cheese", label: "Cheese" },
+      { id: "sour-cream", label: "Sour cream" }
+    ],
+    nameLabel: "Your name",
+    namePlaceholder: "Your name",
+    hasDish: false,
+    statusFor: function (c) { return [c.name, ""]; },
+    countTail: " ingredients claimed",
+    allDone: " claimed. Every ingredient is covered.",
+    nounFor: function (item, cap) { return cap ? item.label : item.label.toLowerCase(); },
+    thanks: function (name, item) { return "Thanks, " + name + ". You are bringing " + item.label.toLowerCase() + "."; }
+  });
+
+  /* ---------- sheet 2: the next 6 Thursdays (every other Thursday from Oct 15, 2026 through July 2027) ---------- */
+  var HOLIDAYS = { "2026-10-15": "Yumm bowl night" };
+  var MAX_SHOWN = 6;
+  var SKIP_DATES = { "2026-11-26": 1, "2026-12-24": 1 }; /* Thanksgiving and Christmas Eve: no dinner */
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function localIso() {
+    var n = new Date();
+    return n.getFullYear() + "-" + pad(n.getMonth() + 1) + "-" + pad(n.getDate());
+  }
+  var todayIso = localIso();
+  var dates = [];
+  var allIso = [];
+  for (var i = 0; i < 40; i++) {
+    var iso0 = new Date(Date.UTC(2026, 9, 15 + 14 * i)).toISOString().slice(0, 10);
+    if (iso0 > "2027-07-31") break;
+    if (iso0.slice(0, 7) === "2026-12") continue; /* December is set by hand below */
+    allIso.push(iso0);
+  }
+  allIso.push("2026-12-03", "2026-12-17"); /* December: only the 3rd and 17th */
+  allIso.sort();
+  for (var k = 0; k < allIso.length && dates.length < MAX_SHOWN; k++) {
+    var iso = allIso[k];
+    if (iso < todayIso) continue;
+    if (SKIP_DATES[iso]) continue;
+    var d = new Date(iso + "T00:00:00Z");
+    dates.push({
+      id: iso,
+      label: d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }),
+      sub: HOLIDAYS[iso] || ""
+    });
+  }
+  var mains = makeSheet({
+    key: "mains",
+    collection: "mains",
+    nameKind: "couple",
+    items: dates,
+    nameLabel: "Your names",
+    namePlaceholder: "Your names, like Sam and Alex",
+    hasDish: true,
+    statusFor: function (c) { return [c.name, c.dish || ""]; },
+    countTail: " Thursdays have a main",
+    allDone: " Thursdays have a main. Every date is covered.",
+    nounFor: function (item, cap) { return cap ? item.label : "the main on " + item.label; },
+    thanks: function (name, item) { return "You have the main on " + item.label + ". Now choose the sides."; },
+    onSides: function (item) { openSides(item.id); },
+    onClaimed: function (item) { openSides(item.id); },
+    onChange: function () { renderSides(); }
+  });
+
+  /* ---------- kids: tap a Thursday, then two helper bars open (same dates as the food sign-ups) ---------- */
+  var KIDS = { claims: {}, loaded: false, openId: null, busy: false, rows: {} };
+  (function () {
+    var listEl = document.getElementById("list-kids");
+    var meterEl = document.getElementById("meter-kids");
+    var countEl = document.getElementById("count-kids");
+    meterEl.style.setProperty("--n", String(dates.length));
+    dates.forEach(function () { meterEl.appendChild(document.createElement("span")); });
+    dates.forEach(function (dt) {
+      var li = document.createElement("li");
+      var row = document.createElement("button");
+      row.type = "button";
+      row.className = "row";
+      row.setAttribute("aria-expanded", "false");
+      var label = document.createElement("span");
+      label.className = "label";
+      label.textContent = dt.label;
+      var subEl = document.createElement("span");
+      subEl.className = "sub";
+      subEl.hidden = true;
+      label.appendChild(subEl);
+      var status = document.createElement("span");
+      status.className = "status";
+      row.appendChild(label);
+      row.appendChild(status);
+      var form = document.createElement("form");
+      form.className = "claim";
+      form.hidden = true;
+      var slots = [1, 2].map(function (n) {
+        var id = "kids-" + dt.id + "-" + n;
+        var wrap = document.createElement("div");
+        wrap.className = "kid-slot";
+        wrap.style.cssText = "flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center";
+        var lab = document.createElement("label");
+        lab.className = "sr";
+        lab.setAttribute("for", id);
+        lab.textContent = "Helper " + n + " name for " + dt.label;
+        var input = document.createElement("input");
+        input.id = id;
+        input.type = "text";
+        input.placeholder = "Helper " + n + ": your name";
+        input.autocomplete = "name";
+        input.setAttribute("autocapitalize", "words");
+        input.maxLength = 60;
+        input.style.flex = "1 1 100%";
+        var taken = document.createElement("div");
+        taken.style.cssText = "flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px";
+        var tname = document.createElement("span");
+        tname.style.fontWeight = "600";
+        var undo = document.createElement("button");
+        undo.type = "button";
+        undo.className = "act";
+        undo.textContent = "Remove my name";
+        taken.appendChild(tname);
+        taken.appendChild(undo);
+        wrap.appendChild(lab);
+        wrap.appendChild(input);
+        wrap.appendChild(taken);
+        form.appendChild(wrap);
+        undo.addEventListener("click", function () { release(dt, n); });
+        return { n: n, wrap: wrap, input: input, taken: taken, tname: tname, undo: undo };
+      });
+      var go = document.createElement("button");
+      go.type = "submit";
+      go.className = "btn";
+      go.textContent = "Sign up";
+      var cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "btn quiet";
+      cancel.textContent = "Close";
+      form.appendChild(go);
+      form.appendChild(cancel);
+      li.appendChild(row);
+      li.appendChild(form);
+      listEl.appendChild(li);
+      KIDS.rows[dt.id] = { sub: subEl, dt: dt, li: li, row: row, status: status, form: form, slots: slots, go: go };
+      row.addEventListener("click", function () {
+        if (!KIDS.loaded || env.readOnly) return;
+        KIDS.openId = KIDS.openId === dt.id ? null : dt.id;
+        KIDS.paint();
+        if (KIDS.openId === dt.id) {
+          var first = slots.filter(function (x) { return !KIDS.claims[dt.id + "-" + x.n]; })[0];
+          if (first) {
+            if (!first.input.value) first.input.value = mem.person;
+            try { first.input.focus(); } catch (e) {}
+          }
+        }
+      });
+      cancel.addEventListener("click", function () { KIDS.openId = null; KIDS.paint(); });
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var todo = [];
+        slots.forEach(function (x) {
+          var v = x.input.value.replace(/\s+/g, " ").trim();
+          if (v && !KIDS.claims[dt.id + "-" + x.n]) todo.push({ n: x.n, name: v });
+        });
+        if (!todo.length) { toast("Type a name in a bar to sign up."); return; }
+        claimKids(dt, todo);
+      });
+    });
+
+    KIDS.paint = function () {
+      var filled = 0, full = 0;
+      dates.forEach(function (dt, idx) {
+        var r = KIDS.rows[dt.id];
+        var n = 0;
+        r.slots.forEach(function (x) {
+          var c = KIDS.claims[dt.id + "-" + x.n];
+          var mine = !!c && isMine(c) && !env.readOnly;
+          if (c) n++;
+          x.input.hidden = !!c;
+          x.taken.hidden = !c;
+          x.tname.textContent = c ? "Helper " + x.n + ": " + c.name : "";
+          x.undo.hidden = !mine;
+        });
+        filled += n;
+        if (n === 2) full++;
+        var names = r.slots.map(function (x) { var c = KIDS.claims[dt.id + "-" + x.n]; return c ? c.name : ""; }).filter(Boolean);
+        r.sub.textContent = names.join(", ");
+        r.sub.hidden = !names.length;
+        meterEl.children[idx].className = n === 2 ? "on" : "";
+        r.li.classList.toggle("taken", n === 2);
+        var open = KIDS.openId === dt.id && !env.readOnly;
+        r.row.setAttribute("aria-expanded", open ? "true" : "false");
+        r.row.setAttribute("aria-disabled", (!KIDS.loaded || env.readOnly) ? "true" : "false");
+        r.form.hidden = !open;
+        r.go.hidden = n === 2;
+        r.go.disabled = KIDS.busy;
+        r.go.textContent = KIDS.busy ? "Saving..." : "Sign up";
+        if (!KIDS.loaded) setStatus(r.status, "plain", "");
+        else if (n === 2) setStatus(r.status, "taken", "Both spots filled", "");
+        else if (env.readOnly) setStatus(r.status, "plain", (2 - n) + " open");
+        else setStatus(r.status, "open", (2 - n) + " of 2 open, tap to sign up");
+        if (KIDS.loaded && n < 2 && !env.readOnly) {
+          var t = document.createElement("span");
+          t.textContent = (2 - n) + " open";
+          r.status.insertBefore(t, r.status.firstChild);
+        }
+      });
+      if (KIDS.loaded) {
+        countEl.textContent = "";
+        var strong = document.createElement("strong");
+        strong.textContent = filled + " of " + (dates.length * 2);
+        countEl.appendChild(strong);
+        countEl.appendChild(document.createTextNode(" kid spots filled"));
+      }
+    };
+
+    async function claimKids(dt, todo) {
+      if (!env.db || KIDS.busy) return;
+      KIDS.busy = true;
+      KIDS.paint();
+      var saved = [], skipped = [];
+      try {
+        for (var i = 0; i < todo.length; i++) {
+          var t = todo[i];
+          var ref = env.db.doc("kids/" + dt.id + "-" + t.n);
+          var lease = await ref.acquire({ holder: token, ttlMs: 4000 });
+          if (!lease.acquired) { skipped.push(t.n); continue; }
+          var cur = await ref.get();
+          var data = cur.exists ? cur.data() : null;
+          if (data && data.name) { skipped.push(t.n); continue; }
+          var doc = { item: dt.label, slot: t.n, date: dt.id, name: t.name, by: token, at: Date.now() };
+          if (env.myId) doc.byUser = env.myId;
+          await ref.set(doc);
+          KIDS.claims[dt.id + "-" + t.n] = doc;
+          remember("person", t.name);
+          saved.push(t);
+        }
+        KIDS.rows[dt.id].slots.forEach(function (x) { if (KIDS.claims[dt.id + "-" + x.n]) x.input.value = ""; });
+        if (saved.length && !skipped.length) {
+          KIDS.openId = null;
+          toast("Thanks, " + saved.map(function (t) { return t.name; }).join(" and ") + ". You are watching the kids on " + dt.label + ".");
+        } else if (skipped.length) {
+          toast("Someone just took a spot on " + dt.label + ". Check the list.");
+        }
+      } catch (e) {
+        if (e && e.code === "invalid_argument") {
+          env.readOnly = true;
+          showNote(MSG_VIEW_ONLY);
+          repaintAll();
+        } else {
+          toast("That did not save. Check your connection and try again.");
+        }
+      } finally {
+        KIDS.busy = false;
+        KIDS.paint();
+      }
+    }
+
+    async function release(dt, n) {
+      if (!env.db || KIDS.busy) return;
+      var c = KIDS.claims[dt.id + "-" + n];
+      if (!c || !isMine(c)) return;
+      KIDS.busy = true;
+      try {
+        await env.db.doc("kids/" + dt.id + "-" + n).delete();
+        toast("That spot is open again.");
+      } catch (e) {
+        toast("That did not save. Try again.");
+      } finally {
+        KIDS.busy = false;
+        KIDS.paint();
+      }
+    }
+
+    KIDS.start = function (db) {
+      db.collection("kids").onSnapshot(function (snap) {
+        var next = {};
+        snap.docs.forEach(function (d) {
+          var v = d.data();
+          if (v && v.name) next[d.id] = v;
+        });
+        KIDS.claims = next;
+        KIDS.loaded = true;
+        KIDS.paint();
+      }, function () {
+        KIDS.loaded = true;
+        env.readOnly = true;
+        showNote("Sign-ups cannot load right now. Reload the page to try again.");
+        repaintAll();
+      });
+    };
+    KIDS.settle = function () { KIDS.loaded = true; KIDS.paint(); };
+    sheets.push(KIDS);
+  })();
+
+  /* ---------- inspiration: 10 easy meals for about 15 people, brought already cooked ---------- */
+  var MEALS = [
+    { name: "Pulled pork sandwich bar", tags: ["Slow cooker", "Build your own"], keys: ["pulled pork", "bbq pork", "pork"],
+      plan: "One 6 to 7 lb pork butt and about 20 buns.",
+      why: "Cooks on low all day and holds on warm, so people serve themselves.",
+      carry: "Bring the meat in the slow cooker on warm, with its juices. Pack buns and slaw separately.",
+      sides: "Coleslaw, baked beans, mac and cheese, corn on the cob." },
+    { name: "Chili bar", tags: ["Slow cooker", "Make ahead"], keys: ["chili"],
+      plan: "About 4 lb ground meat plus beans, in one big pot or two slow cookers.",
+      why: "Tastes better the next day. Cheese, sour cream and onions turn it into a bar.",
+      carry: "Ride in the slow cooker or a lidded pot wedged in a box. Toppings go in separate containers.",
+      sides: "Cornbread, green salad, apple slices." },
+    { name: "Beef barbacoa taco bar", tags: ["Slow cooker", "Build your own"], keys: ["barbacoa"],
+      plan: "About 5 to 6 lb chuck roast and 30 tortillas.",
+      why: "The slow cooker does the work, and toppings let picky eaters build their own plate.",
+      carry: "Shred it before you leave and bring it in the slow cooker with some juices so it stays moist. Toppings travel in their own containers.",
+      sides: "Rice, black beans, chips and salsa, street corn salad." },
+    { name: "Baked ziti with sausage or turkey", tags: ["Oven", "Make ahead"], keys: ["ziti", "baked pasta"],
+      plan: "About 15 cups of cooked pasta across two large pans.",
+      why: "Familiar and mild, so kids and picky eaters usually take it.",
+      carry: "Bake fully, cover with foil, and carry in an insulated bag. Bring extra sauce in a jar.",
+      sides: "Caesar salad, garlic bread, roasted vegetables." },
+    { name: "Baked chicken spaghetti", tags: ["Oven", "Make ahead"], keys: ["chicken spaghetti", "spaghetti"],
+      plan: "Two 9x13 pans.",
+      why: "A filling pasta casserole that reheats well.",
+      carry: "Cover after baking. A little extra sauce or broth loosens it if it dries out.",
+      sides: "Green salad, garlic bread, steamed broccoli." },
+    { name: "Pot roast with potatoes and carrots", tags: ["Slow cooker"], keys: ["pot roast", "roast beef", "beef roast"],
+      plan: "Two 3 to 4 lb chuck roasts.",
+      why: "Hands-off and hearty.",
+      carry: "Keep it in the slow cooker, set on a towel in a box so it cannot tip.",
+      sides: "Rolls or cornbread, green beans, a simple salad." },
+    { name: "Cheeseburger sliders", tags: ["Oven", "Low effort"], keys: ["slider", "cheeseburger"],
+      plan: "30 to 40 sliders in two or three pans.",
+      why: "Kids love them, and the pans go straight to the table.",
+      carry: "Keep them in the foil pans, covered, so they can be served from the same pan.",
+      sides: "Pasta salad, chips, veggies and dip, fruit." },
+    { name: "Sausage and peppers", tags: ["Stovetop", "Low effort"], keys: ["sausage"],
+      plan: "5 to 6 lb sausage with peppers and onions.",
+      why: "One skillet or sheet pan. Serve on rolls or over polenta.",
+      carry: "Carry in a covered foil pan. Bring rolls separately so they do not go soggy.",
+      sides: "Polenta or pasta salad, Caesar salad, fruit." },
+    { name: "Pizza night", tags: ["Low effort"], keys: ["pizza"],
+      plan: "5 to 6 large pizzas, with at least one cheese and one veggie.",
+      why: "The easiest main for a busy week. Plan 2 to 3 slices per person.",
+      carry: "Pick them up as close to the meal as you can, and use insulated pizza bags.",
+      sides: "Big salads, veggie tray, fruit." },
+    { name: "Chicken or steak fajita bar", tags: ["Oven", "Build your own"], keys: ["fajita"],
+      plan: "6 to 7 lb chicken or flank steak over two or three sheet pans, 30 tortillas.",
+      why: "Sheet pans cook in about 30 minutes. Peppers, onions and beans cover vegetarians.",
+      carry: "Pack the meat and peppers in lidded foil pans. Wrap tortillas in foil and a towel so they stay warm.",
+      sides: "Spanish rice, refried beans, guacamole, fruit salad." }
+  ];
+  var mealsEl = document.getElementById("meals");
+  MEALS.forEach(function (m) {
+    var det = document.createElement("details");
+    var sum = document.createElement("summary");
+    var wrap = document.createElement("div");
+    wrap.className = "sum";
+    var nm = document.createElement("span");
+    nm.className = "name";
+    nm.textContent = m.name;
+    var tg = document.createElement("span");
+    tg.className = "tags";
+    m.tags.forEach(function (t) {
+      var s = document.createElement("span");
+      s.className = "tag";
+      s.textContent = t;
+      tg.appendChild(s);
+    });
+    wrap.appendChild(nm);
+    wrap.appendChild(tg);
+    sum.appendChild(wrap);
+    var dl = document.createElement("dl");
+    dl.className = "meal-body";
+    [["Plan for 15", m.plan], ["Why it works", m.why], ["Getting it there", m.carry], ["Sides to ask for", m.sides]].forEach(function (p) {
+      var box = document.createElement("div");
+      var dt = document.createElement("dt");
+      dt.textContent = p[0];
+      var dd = document.createElement("dd");
+      dd.textContent = p[1];
+      box.appendChild(dt);
+      box.appendChild(dd);
+      dl.appendChild(box);
+    });
+    det.appendChild(sum);
+    det.appendChild(dl);
+    mealsEl.appendChild(det);
+  });
+  var mealList = document.createElement("datalist");
+  mealList.id = "meal-names";
+  MEALS.forEach(function (m) {
+    var o = document.createElement("option");
+    o.value = m.name;
+    mealList.appendChild(o);
+  });
+  document.body.appendChild(mealList);
+
+  /* ---------- Thursday sides: next Thursday by default, or any date a couple has taken ---------- */
+  var GENERIC = ["Green salad", "Vegetable", "Starch side", "Bread or rolls", "Fruit", "Dessert", "Drinks"];
+  var SIDES = { date: null, items: [], loaded: false, open: null, draft: mem.person, busy: false, lastDish: null, ideaTouched: false, hostInit: false, subscribed: false, unsub: null, pickSig: "" };
+  var el = {
+    pick: document.getElementById("sides-pick"),
+    main: document.getElementById("sides-main"),
+    progress: document.getElementById("sides-progress"),
+    count: document.getElementById("count-sides"),
+    wait: document.getElementById("sides-wait"),
+    waitTitle: document.getElementById("sides-wait-title"),
+    waitBtn: document.getElementById("go-mains-wait"),
+    host: document.getElementById("host"),
+    list: document.getElementById("list-sides"),
+    none: document.getElementById("sides-none"),
+    fine: document.getElementById("sides-fine"),
+    hint: document.getElementById("idea-hint"),
+    chips: document.getElementById("idea-chips"),
+    addAll: document.getElementById("add-all"),
+    generic: document.getElementById("generic-chips"),
+    addForm: document.getElementById("add-form"),
+    addInput: document.getElementById("add-input"),
+    addBtn: document.getElementById("add-btn"),
+    dishForm: document.getElementById("dish-form"),
+    dishInput: document.getElementById("dish-input"),
+    dishBtn: document.getElementById("dish-btn"),
+    otherList: document.getElementById("other-list"),
+    otherRow: document.getElementById("other-row"),
+    otherForm: document.getElementById("other-form"),
+    otherName: document.getElementById("other-name"),
+    otherWhat: document.getElementById("other-what"),
+    otherGo: document.getElementById("other-go"),
+    otherCancel: document.getElementById("other-cancel")
+  };
+
+  function mealFor(dish) {
+    if (!dish) return null;
+    var t = dish.toLowerCase();
+    for (var a = 0; a < MEALS.length; a++) {
+      for (var k = 0; k < MEALS[a].keys.length; k++) {
+        if (t.indexOf(MEALS[a].keys[k]) !== -1) return a;
+      }
+    }
+    return null;
+  }
+  function parseSides(str) {
+    return str.replace(/\.$/, "").split(",").map(function (s) { return s.trim(); }).filter(Boolean).map(function (s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    });
+  }
+  function nextDate() { return dates.length ? dates[0] : null; }
+  function dateItem(id) {
+    for (var j = 0; j < dates.length; j++) { if (dates[j].id === id) return dates[j]; }
+    return null;
+  }
+  function sidesCol() { return env.db.collection("sides/" + SIDES.date + "/items"); }
+  SIDES.date = dates.length ? dates[0].id : null;
+  function canManage(c) {
+    if (!c || env.readOnly) return false;
+    return env.isAdmin || isMine(c);
+  }
+  function hasSide(label) {
+    var t = label.toLowerCase();
+    return SIDES.items.some(function (it) { return it.label.toLowerCase() === t; });
+  }
+
+  function makeChip(label, parent) {
+    var done = hasSide(label);
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip" + (done ? " done" : "");
+    if (done) {
+      var t = document.createElement("span");
+      t.className = "tick sm";
+      t.setAttribute("aria-hidden", "true");
+      b.appendChild(t);
+      b.appendChild(document.createTextNode(label));
+      b.disabled = true;
+      b.setAttribute("aria-pressed", "true");
+    } else {
+      b.textContent = "+ " + label;
+      b.disabled = SIDES.busy;
+      b.addEventListener("click", function () { addSide(label); });
+    }
+    parent.appendChild(b);
+  }
+  var pendingSuggested = [];
+  function renderChips() {
+    el.chips.textContent = "";
+    el.generic.textContent = "";
+    pendingSuggested = [];
+    var typed = el.dishInput.value.trim();
+    var mi = mealFor(typed);
+    if (mi !== null) {
+      el.hint.textContent = "Suggested sides for " + MEALS[mi].name;
+      parseSides(MEALS[mi].sides).forEach(function (s) {
+        makeChip(s, el.chips);
+        if (!hasSide(s)) pendingSuggested.push(s);
+      });
+    } else if (typed) {
+      el.hint.textContent = "No suggestions for that meal yet. Use the ideas below or type your own.";
+    } else {
+      el.hint.textContent = "Type your meal above to see suggested sides";
+    }
+    el.addAll.hidden = pendingSuggested.length < 2;
+    el.addAll.disabled = SIDES.busy;
+    el.addAll.textContent = "Add all " + pendingSuggested.length + " suggested";
+    GENERIC.forEach(function (s) { makeChip(s, el.generic); });
+  }
+
+  function renderSideList(claim) {
+    var active = document.activeElement;
+    var hadFocus = !!(active && active.classList && active.classList.contains("side-input"));
+    var items = SIDES.items.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    var manage = !env.readOnly;
+    el.list.textContent = "";
+    var filled = 0;
+    var focusInput = null;
+    items.forEach(function (it) {
+      var taken = !!it.name;
+      if (taken) filled++;
+      var li = document.createElement("li");
+      if (taken) li.className = "taken";
+
+      var row = document.createElement("button");
+      row.type = "button";
+      row.className = "row";
+      var label = document.createElement("span");
+      label.className = "label";
+      label.textContent = it.label;
+      var status = document.createElement("span");
+      if (taken) setStatus(status, "taken", it.name, "");
+      else if (env.readOnly) setStatus(status, "plain", "Open");
+      else setStatus(status, "open", "Open, tap to claim");
+      row.appendChild(label);
+      row.appendChild(status);
+      var expanded = SIDES.open === it.id && !taken && !env.readOnly;
+      row.setAttribute("aria-expanded", expanded ? "true" : "false");
+      row.setAttribute("aria-disabled", (taken || env.readOnly) ? "true" : "false");
+      row.addEventListener("click", function () {
+        if (taken || env.readOnly) return;
+        SIDES.open = SIDES.open === it.id ? null : it.id;
+        if (SIDES.open && !SIDES.draft) SIDES.draft = mem.person;
+        renderSideList(claim);
+        var inp = el.list.querySelector(".side-input");
+        if (inp) inp.focus();
+      });
+      li.appendChild(row);
+
+      if (expanded) {
+        var form = document.createElement("form");
+        form.className = "claim";
+        var lab = document.createElement("label");
+        lab.className = "sr";
+        lab.setAttribute("for", "side-name");
+        lab.textContent = "Your name for " + it.label;
+        var input = document.createElement("input");
+        input.id = "side-name";
+        input.type = "text";
+        input.className = "side-input";
+        input.placeholder = "Your name";
+        input.autocomplete = "name";
+        input.setAttribute("autocapitalize", "words");
+        input.setAttribute("enterkeyhint", "done");
+        input.maxLength = 60;
+        input.value = SIDES.draft;
+        input.addEventListener("input", function () { SIDES.draft = input.value; });
+        var go = document.createElement("button");
+        go.type = "submit";
+        go.className = "btn";
+        go.textContent = SIDES.busy ? "Saving..." : "Sign up";
+        go.disabled = SIDES.busy;
+        var cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "btn quiet";
+        cancel.textContent = "Cancel";
+        cancel.addEventListener("click", function () { SIDES.open = null; renderSideList(claim); });
+        form.appendChild(lab);
+        form.appendChild(input);
+        form.appendChild(go);
+        form.appendChild(cancel);
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var name = input.value.replace(/\s+/g, " ").trim();
+          if (!name) { input.focus(); return; }
+          SIDES.draft = name;
+          claimSide(it, name);
+        });
+        li.appendChild(form);
+        if (hadFocus) focusInput = input;
+      }
+
+      var mineHere = taken && isMine(it) && !env.readOnly;
+      if (SIDES.editId === it.id && manage) {
+        var ef = document.createElement("form");
+        ef.className = "claim";
+        var elab = document.createElement("label");
+        elab.className = "sr";
+        elab.setAttribute("for", "side-edit");
+        elab.textContent = "Edit " + it.label;
+        var ein = document.createElement("input");
+        ein.id = "side-edit";
+        ein.type = "text";
+        ein.className = "wide";
+        ein.maxLength = 60;
+        ein.value = it.label;
+        var esave = document.createElement("button");
+        esave.type = "submit";
+        esave.className = "btn";
+        esave.textContent = "Save";
+        var ecancel = document.createElement("button");
+        ecancel.type = "button";
+        ecancel.className = "btn quiet";
+        ecancel.textContent = "Cancel";
+        ecancel.addEventListener("click", function () { SIDES.editId = null; renderSideList(claim); });
+        ef.appendChild(elab); ef.appendChild(ein); ef.appendChild(esave); ef.appendChild(ecancel);
+        ef.addEventListener("submit", function (e) { e.preventDefault(); renameSide(it, ein.value); });
+        li.appendChild(ef);
+        focusInput = ein;
+      }
+      if (manage) {
+        var box = document.createElement("div");
+        box.className = "mine";
+        if (mineHere) {
+          var undo = document.createElement("button");
+          undo.type = "button";
+          undo.className = "act";
+          undo.textContent = "Remove my name";
+          undo.addEventListener("click", function () { releaseSide(it); });
+          box.appendChild(undo);
+        }
+        var ed = document.createElement("button");
+        ed.type = "button";
+        ed.className = "act";
+        ed.textContent = "Edit item";
+        ed.addEventListener("click", function () { SIDES.editId = SIDES.editId === it.id ? null : it.id; renderSideList(claim); });
+        box.appendChild(ed);
+        if (!taken || mineHere || env.isAdmin) {
+          var rem = document.createElement("button");
+          rem.type = "button";
+          rem.className = "act";
+          rem.textContent = "Remove from list";
+          rem.addEventListener("click", function () { removeSide(it); });
+          box.appendChild(rem);
+        }
+        li.appendChild(box);
+      }
+      el.list.appendChild(li);
+    });
+    if (focusInput) focusInput.focus();
+
+    el.progress.hidden = items.length === 0;
+    el.count.textContent = "";
+    if (items.length) {
+      var strong = document.createElement("strong");
+      strong.textContent = filled + " of " + items.length;
+      el.count.appendChild(strong);
+      el.count.appendChild(document.createTextNode(filled === items.length ? " claimed. The table is covered." : " claimed"));
+    }
+    el.list.hidden = items.length === 0;
+    if (items.length === 0) {
+      el.none.hidden = false;
+      el.none.textContent = !SIDES.loaded ? "Loading the list" : (manage ? "Nothing on the list yet. Add a side above, or tap a suggestion." : "Nothing on the list yet.");
+    } else {
+      el.none.hidden = true;
+    }
+    el.fine.hidden = true;
+  }
+
+  function hideSidesBody() {
+    el.main.hidden = true;
+    el.wait.hidden = true;
+    el.host.hidden = true;
+    el.list.hidden = true;
+    el.none.hidden = true;
+    el.fine.hidden = true;
+    el.progress.hidden = true;
+    el.otherList.hidden = true;
+  }
+
+  function renderPick() {
+    var opts = [];
+    dates.forEach(function (dt, idx) {
+      var c = mains.claims[dt.id];
+      {
+        opts.push({ id: dt.id, text: dt.label + (dt.sub ? " (" + dt.sub + ")" : "") + (c ? "" : " (no main yet)") });
+      }
+    });
+    var sig = opts.map(function (o) { return o.id + "|" + o.text; }).join("~") + "#" + SIDES.date;
+    if (sig === SIDES.pickSig) return;
+    SIDES.pickSig = sig;
+    el.pick.textContent = "";
+    opts.forEach(function (o) {
+      var op = document.createElement("option");
+      op.value = o.id;
+      op.textContent = o.text;
+      el.pick.appendChild(op);
+    });
+    el.pick.value = SIDES.date;
+  }
+
+  function selectDate(id) {
+    if (!dateItem(id)) return;
+    SIDES.date = id;
+    SIDES.items = [];
+    SIDES.loaded = false;
+    SIDES.open = null;
+    SIDES.editId = null;
+    SIDES.otherOpen = false;
+    SIDES.lastDish = null;
+    SIDES.ideaTouched = false;
+    SIDES.hostInit = false;
+    SIDES.pickSig = "";
+    if (SIDES.unsub) { try { SIDES.unsub(); } catch (e) {} SIDES.unsub = null; }
+    SIDES.subscribed = false;
+    el.addInput.value = "";
+    startSides();
+    renderSides();
+  }
+  function openSides(id) {
+    if (id !== SIDES.date) selectDate(id);
+    show("sides");
+  }
+
+  renderSides = function () {
+    var nd = dateItem(SIDES.date);
+    if (!nd) {
+      hideSidesBody();
+      el.none.hidden = false;
+      el.none.textContent = "There are no more Thursdays on the schedule.";
+      return;
+    }
+    renderPick();
+    if (!mains.loaded) { hideSidesBody(); return; }
+    var claim = mains.claims[nd.id] || null;
+    el.main.textContent = "";
+    if (claim) {
+      el.wait.hidden = true;
+      el.main.hidden = false;
+      var k = document.createElement("span");
+      k.className = "k";
+      k.textContent = "Main";
+      el.main.appendChild(k);
+      el.main.appendChild(document.createTextNode(claim.name + (claim.dish ? ", " + claim.dish : "")));
+    } else {
+      el.main.hidden = true;
+      el.wait.hidden = false;
+      el.waitTitle.textContent = "No one has the main for " + nd.label + " yet.";
+      el.waitBtn.hidden = env.readOnly;
+    }
+
+    var manage = !env.readOnly; /* anyone can add, edit and claim sides */
+    var dishOwner = !!claim && canManage(claim);
+    el.host.hidden = !manage;
+    document.getElementById("dish-form").hidden = !dishOwner;
+    if (manage) {
+      var dishKey = claim ? (claim.dish || "") : "";
+      if (dishKey !== SIDES.lastDish) {
+        SIDES.lastDish = dishKey;
+        el.dishInput.value = dishKey;
+      }
+      if (SIDES.loaded && !SIDES.hostInit) {
+        SIDES.hostInit = true;
+        el.host.open = SIDES.items.length === 0;
+      }
+      el.addBtn.disabled = SIDES.busy;
+      el.dishBtn.disabled = SIDES.busy;
+      renderChips();
+      document.getElementById("suggest-field").hidden = !dishKey && !dishOwner;
+    }
+    el.otherList.hidden = env.readOnly;
+    var oOpen = !!SIDES.otherOpen && !env.readOnly;
+    el.otherForm.hidden = !oOpen;
+    el.otherRow.setAttribute("aria-expanded", oOpen ? "true" : "false");
+    el.otherGo.disabled = SIDES.busy;
+    el.otherGo.textContent = SIDES.busy ? "Saving..." : "Sign up";
+    renderSideList(claim);
+  };
+
+  async function addSide(label) {
+    label = label.replace(/\s+/g, " ").trim();
+    if (!label || !env.db || !SIDES.date || SIDES.busy) return;
+    if (hasSide(label)) { toast(label + " is already on the list."); return; }
+    SIDES.busy = true;
+    renderSides();
+    try {
+      await sidesCol().add({ label: label, order: Date.now(), createdBy: token });
+      el.addInput.value = "";
+      toast("Added " + label + ".");
+    } catch (e) {
+      toast("That did not save. Check your connection and try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function addMany(labels) {
+    if (!env.db || !SIDES.date || SIDES.busy || !labels.length) return;
+    SIDES.busy = true;
+    renderSides();
+    var base = Date.now();
+    var added = 0;
+    try {
+      for (var n = 0; n < labels.length; n++) {
+        if (hasSide(labels[n])) continue;
+        await sidesCol().add({ label: labels[n], order: base + n, createdBy: token });
+        added++;
+      }
+      toast("Added " + added + " items to the list.");
+    } catch (e) {
+      toast("Some items did not save. Check the list and try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function removeSide(it) {
+    if (!env.db || SIDES.busy) return;
+    SIDES.busy = true;
+    try {
+      await sidesCol().doc(it.id).delete();
+      toast(it.label + " was removed from the list.");
+    } catch (e) {
+      toast("That did not save. Try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function renameSide(it, text) {
+    text = text.replace(/\s+/g, " ").trim();
+    if (!text) { toast("Type a name for the item."); return; }
+    if (!env.db || SIDES.busy) return;
+    if (text.toLowerCase() !== it.label.toLowerCase() && hasSide(text)) { toast(text + " is already on the list."); return; }
+    SIDES.busy = true;
+    try {
+      await sidesCol().doc(it.id).update({ label: text });
+      SIDES.editId = null;
+      toast("Saved.");
+    } catch (e) {
+      toast("That did not save. Check your connection and try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function claimSide(it, name) {
+    if (!env.db || SIDES.busy) return;
+    SIDES.busy = true;
+    renderSides();
+    var ref = sidesCol().doc(it.id);
+    try {
+      var lease = await ref.acquire({ holder: token, ttlMs: 4000 });
+      if (!lease.acquired) {
+        toast("Someone is signing up for " + it.label.toLowerCase() + " right now. Try again in a few seconds.");
+        return;
+      }
+      var cur = await ref.get();
+      if (!cur.exists) {
+        toast("That item was removed. Pick another.");
+        SIDES.open = null;
+        return;
+      }
+      var data = cur.data() || {};
+      if (data.name) {
+        toast(it.label + " was just taken by " + data.name + ". Pick another.");
+        SIDES.open = null;
+        return;
+      }
+      var patch = { name: name, by: token, at: Date.now() };
+      if (env.myId) patch.byUser = env.myId;
+      await ref.update(patch);
+      remember("person", name);
+      SIDES.open = null;
+      toast("Thanks, " + name + ". You are bringing " + it.label.toLowerCase() + ".");
+    } catch (e) {
+      if (e && e.code === "invalid_argument") {
+        env.readOnly = true;
+        showNote(MSG_VIEW_ONLY);
+      } else {
+        toast("That did not save. Check your connection and try again.");
+      }
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function releaseSide(it) {
+    if (!env.db || SIDES.busy || !isMine(it)) return;
+    SIDES.busy = true;
+    try {
+      await sidesCol().doc(it.id).set({ label: it.label, order: it.order || Date.now(), createdBy: it.createdBy || token });
+      toast(it.label + " is open again.");
+    } catch (e) {
+      toast("That did not save. Try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function saveDish(text) {
+    text = text.replace(/\s+/g, " ").trim();
+    if (!env.db || !SIDES.date || SIDES.busy) return;
+    var cur = mains.claims[SIDES.date];
+    if (!cur || !canManage(cur)) return;
+    SIDES.busy = true;
+    renderSides();
+    try {
+      await env.db.doc("mains/" + SIDES.date).update({ dish: text });
+      cur.dish = text;
+      toast(text ? "Dinner name saved." : "Dinner name cleared.");
+    } catch (e) {
+      toast("That did not save. Check your connection and try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  async function addOther(name, what) {
+    if (!env.db || !SIDES.date || SIDES.busy) return;
+    SIDES.busy = true;
+    renderSides();
+    try {
+      var doc = { label: what, order: Date.now(), createdBy: token, name: name, by: token, at: Date.now() };
+      if (env.myId) doc.byUser = env.myId;
+      await sidesCol().add(doc);
+      remember("person", name);
+      SIDES.otherOpen = false;
+      el.otherWhat.value = "";
+      toast("Thanks, " + name + ". You are bringing " + what.toLowerCase() + ".");
+    } catch (e) {
+      toast("That did not save. Check your connection and try again.");
+    } finally {
+      SIDES.busy = false;
+      renderSides();
+    }
+  }
+  function startSides() {
+    if (!SIDES.date || SIDES.subscribed || !env.db) return;
+    SIDES.subscribed = true;
+    var forDate = SIDES.date;
+    SIDES.unsub = sidesCol().onSnapshot(function (snap) {
+      if (forDate !== SIDES.date) return;
+      var items = [];
+      snap.docs.forEach(function (d) {
+        var v = d.data();
+        if (v && v.label) {
+          items.push({ id: d.id, label: String(v.label), order: v.order, name: v.name || "", by: v.by, byUser: v.byUser, createdBy: v.createdBy });
+        }
+      });
+      SIDES.items = items;
+      SIDES.loaded = true;
+      renderSides();
+    }, function () {
+      SIDES.loaded = true;
+      renderSides();
+    });
+  }
+
+  el.dishInput.addEventListener("input", renderChips);
+  el.pick.addEventListener("change", function () { selectDate(el.pick.value); });
+  el.addAll.addEventListener("click", function () { addMany(pendingSuggested.slice()); });
+  el.dishForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    saveDish(el.dishInput.value);
+  });
+  el.otherRow.addEventListener("click", function () {
+    if (env.readOnly) return;
+    SIDES.otherOpen = !SIDES.otherOpen;
+    renderSides();
+    if (SIDES.otherOpen) {
+      if (!el.otherName.value) el.otherName.value = mem.person;
+      try { el.otherList.scrollIntoView({ block: "center" }); } catch (e) {}
+      setTimeout(function () { (el.otherName.value ? el.otherWhat : el.otherName).focus({ preventScroll: true }); }, 60);
+    }
+  });
+  el.otherCancel.addEventListener("click", function () { SIDES.otherOpen = false; renderSides(); });
+  el.otherForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var n = el.otherName.value.replace(/\s+/g, " ").trim();
+    var w = el.otherWhat.value.replace(/\s+/g, " ").trim();
+    if (!n) { el.otherName.focus(); return; }
+    if (!w) { el.otherWhat.focus(); return; }
+    addOther(n, w.charAt(0).toUpperCase() + w.slice(1));
+  });
+  el.addForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    addSide(el.addInput.value);
+  });
+
+  /* ---------- ideas from the group (shared) ---------- */
+  var IDEAS = { items: [], loaded: false, busy: false };
+  var ideaEl = {
+    box: document.getElementById("idea-add"),
+    form: document.getElementById("idea-form"),
+    name: document.getElementById("idea-name"),
+    note: document.getElementById("idea-note"),
+    who: document.getElementById("idea-who"),
+    go: document.getElementById("idea-go"),
+    wrap: document.getElementById("group-ideas"),
+    list: document.getElementById("group-list")
+  };
+  function paintIdeas() {
+    ideaEl.box.hidden = env.readOnly;
+    ideaEl.go.disabled = IDEAS.busy;
+    ideaEl.go.textContent = IDEAS.busy ? "Saving..." : "Add idea";
+    var openNames = {};
+    [].forEach.call(ideaEl.list.querySelectorAll("details[open]"), function (d) { openNames[d.dataset.id] = true; });
+    ideaEl.list.textContent = "";
+    var items = IDEAS.items.slice().sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+    ideaEl.wrap.hidden = items.length === 0;
+    items.forEach(function (it) {
+      var det = document.createElement("details");
+      det.dataset.id = it.id;
+      if (openNames[it.id]) det.open = true;
+      var sum = document.createElement("summary");
+      var w = document.createElement("div");
+      w.className = "sum";
+      var nm = document.createElement("span");
+      nm.className = "name";
+      nm.textContent = it.name;
+      w.appendChild(nm);
+      if (it.who) {
+        var tg = document.createElement("span");
+        tg.className = "tags";
+        var t = document.createElement("span");
+        t.className = "tag";
+        t.textContent = "Added by " + it.who;
+        tg.appendChild(t);
+        w.appendChild(tg);
+      }
+      sum.appendChild(w);
+      det.appendChild(sum);
+      var body = document.createElement("div");
+      body.className = "meal-body";
+      var p = document.createElement("p");
+      p.style.margin = "0";
+      p.textContent = it.note || "No notes added.";
+      body.appendChild(p);
+      if (!env.readOnly && (env.isAdmin || isMine(it))) {
+        var rm = document.createElement("button");
+        rm.type = "button";
+        rm.className = "act";
+        rm.textContent = "Remove idea";
+        rm.addEventListener("click", function () { removeIdea(it); });
+        body.appendChild(rm);
+      }
+      det.appendChild(body);
+      ideaEl.list.appendChild(det);
+    });
+    var names = MEALS.map(function (m) { return m.name; }).concat(items.map(function (i) { return i.name; }));
+    var sig = names.join("|");
+    if (mealList.dataset.sig !== sig) {
+      mealList.dataset.sig = sig;
+      mealList.textContent = "";
+      names.forEach(function (n) { var o = document.createElement("option"); o.value = n; mealList.appendChild(o); });
+    }
+  }
+  async function removeIdea(it) {
+    if (!env.db || IDEAS.busy) return;
+    IDEAS.busy = true;
+    try {
+      await env.db.doc("ideas/" + it.id).delete();
+      toast("Idea removed.");
+    } catch (e) {
+      toast("That did not save. Try again.");
+    } finally {
+      IDEAS.busy = false;
+      paintIdeas();
+    }
+  }
+  function startIdeas() {
+    if (!env.db) return;
+    env.db.collection("ideas").onSnapshot(function (snap) {
+      var items = [];
+      snap.docs.forEach(function (d) {
+        var v = d.data();
+        if (v && v.name) items.push({ id: d.id, name: String(v.name), note: String(v.note || ""), who: String(v.who || ""), by: v.by, byUser: v.byUser, at: v.at || 0 });
+      });
+      IDEAS.items = items;
+      IDEAS.loaded = true;
+      paintIdeas();
+    }, function () { IDEAS.loaded = true; paintIdeas(); });
+  }
+  ideaEl.form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (!env.db || IDEAS.busy || env.readOnly) return;
+    var name = ideaEl.name.value.replace(/\s+/g, " ").trim();
+    if (!name) { ideaEl.name.focus(); return; }
+    var note = ideaEl.note.value.replace(/\s+/g, " ").trim();
+    var who = ideaEl.who.value.replace(/\s+/g, " ").trim();
+    var doc = { name: name.charAt(0).toUpperCase() + name.slice(1), note: note, who: who, by: token, at: Date.now() };
+    if (env.myId) doc.byUser = env.myId;
+    IDEAS.busy = true;
+    paintIdeas();
+    try {
+      await env.db.collection("ideas").add(doc);
+      if (who) remember("person", who);
+      ideaEl.name.value = "";
+      ideaEl.note.value = "";
+      ideaEl.box.open = false;
+      toast("Idea added. Thank you.");
+    } catch (err) {
+      toast("That did not save. Check your connection and try again.");
+    } finally {
+      IDEAS.busy = false;
+      paintIdeas();
+    }
+  });
+  ideaEl.box.addEventListener("toggle", function () {
+    if (ideaEl.box.open && !ideaEl.who.value) ideaEl.who.value = mem.person;
+  });
+
+  /* ---------- screens and tab bar ---------- */
+  var VIEWS = { bowls: document.getElementById("view-bowls"), mains: document.getElementById("view-mains"), ideas: document.getElementById("view-ideas"), kids: document.getElementById("view-kids"), sides: document.getElementById("view-sides") };
+  var TABS = { bowls: document.getElementById("tab-bowls"), mains: document.getElementById("tab-mains"), ideas: document.getElementById("tab-ideas"), kids: document.getElementById("tab-kids") };
+  var bowlsLive = todayIso <= "2026-10-15";
+  if (!bowlsLive) TABS.bowls.style.display = "none";
+  function show(which, quiet) {
+    Object.keys(VIEWS).forEach(function (k) {
+      VIEWS[k].hidden = k !== which;
+      var tabOwner = which === "sides" ? "mains" : which;
+      if (TABS[k]) {
+        if (k === tabOwner) TABS[k].setAttribute("aria-current", "page");
+        else TABS[k].removeAttribute("aria-current");
+      }
+    });
+    try { history.replaceState(null, "", "#" + which); } catch (e) {}
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (!quiet) {
+      var h = VIEWS[which].querySelector("h1");
+      if (h) { try { h.focus({ preventScroll: true }); } catch (e) {} }
+    }
+  }
+  Object.keys(TABS).forEach(function (k) {
+    TABS[k].addEventListener("click", function () { show(k); });
+  });
+  document.getElementById("go-mains-wait").addEventListener("click", function () {
+    var nd = dateItem(SIDES.date);
+    show("mains");
+    if (nd) mains.openForm(nd.id);
+  });
+  document.getElementById("sides-back").addEventListener("click", function () { show("mains"); });
+  document.getElementById("to-sides").addEventListener("click", function () { var nd = nextDate(); if (nd) openSides(nd.id); });
+  document.getElementById("to-ideas").addEventListener("click", function () { show("ideas"); });
+  try {
+    var h0 = location.hash.replace("#", "");
+    if (!bowlsLive && h0 === "bowls") h0 = "";
+    show(VIEWS[h0] ? h0 : (bowlsLive ? "bowls" : "mains"), true);
+  } catch (e) { show(bowlsLive ? "bowls" : "mains", true); }
+
+  /* The list is computed from today's date, so reload when the phone wakes on a new day. */
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && localIso() !== todayIso) {
+      try { location.reload(); } catch (e) {}
+    }
+  });
+
+  /* ---------- start ---------- */
+  async function init() {
+    repaintAll();
+    var c = window.claude;
+    if (!c || !c.use) {
+      env.readOnly = true;
+      showNote("Sign-ups are not available in this view. Open the page in Claude to sign up.");
+      sheets.forEach(function (s) { s.settle(); });
+      return;
+    }
+    var user = null;
+    try { user = await c.use("user"); } catch (e) {}
+    if (user) {
+      try {
+        var cw = await user.can("data.write");
+        if (cw === false) {
+          env.readOnly = true;
+          showNote(MSG_VIEW_ONLY);
+        }
+      } catch (e) {}
+      try { env.myId = await user.id(); } catch (e) {}
+      try { env.isAdmin = (await user.isOwner()) || (await user.canEdit()); } catch (e) {}
+    }
+    var handle = null;
+    try { handle = await c.use("db"); } catch (e) {}
+    if (!handle) {
+      env.readOnly = true;
+      showNote("Sign in to Claude to see and add sign-ups.");
+      sheets.forEach(function (s) { s.settle(); });
+      return;
+    }
+    env.db = handle;
+    sheets.forEach(function (s) { s.start(handle); });
+    startSides();
+    startIdeas();
+    startBowlsOther();
+    repaintAll();
+  }
+
+  /* ---------- Oct 15 menu: "Other" items (anyone can add something not on the list) ---------- */
+  var BO = { items: [], open: false, busy: false, started: false };
+  var boList = document.getElementById("list-bowls");
+  var boUl = document.getElementById("bowls-other-list");
+  var boRow = document.getElementById("bowls-other-row");
+  var boForm = document.getElementById("bowls-other-form");
+  var boName = document.getElementById("bowls-other-name");
+  var boWhat = document.getElementById("bowls-other-what");
+  var boGo = document.getElementById("bowls-other-go");
+  function boPaint() {
+    Array.prototype.slice.call(boUl.querySelectorAll("li.bo-item")).forEach(function (n) { n.remove(); });
+    var anchor = document.getElementById("bowls-other-li");
+    BO.items.forEach(function (it) {
+      var li = document.createElement("li");
+      li.className = "bo-item taken";
+      var row = document.createElement("div");
+      row.className = "row";
+      row.setAttribute("aria-disabled", "true");
+      var lab = document.createElement("span");
+      lab.className = "label";
+      lab.textContent = it.label;
+      var st = document.createElement("span");
+      st.className = "status taken";
+      var t = document.createElement("span");
+      t.className = "tick";
+      t.setAttribute("aria-hidden", "true");
+      st.appendChild(t);
+      st.appendChild(document.createTextNode(it.name));
+      row.appendChild(lab);
+      row.appendChild(st);
+      li.appendChild(row);
+      boUl.insertBefore(li, anchor);
+    });
+    var open = BO.open && !env.readOnly;
+    boForm.hidden = !open;
+    boRow.setAttribute("aria-expanded", open ? "true" : "false");
+    boGo.disabled = BO.busy;
+    boGo.textContent = BO.busy ? "Saving..." : "Sign up";
+    anchor.hidden = env.readOnly;
+  }
+  function startBowlsOther() {
+    if (BO.started || !env.db) return;
+    BO.started = true;
+    env.db.collection("bowl-other").onSnapshot(function (snap) {
+      var items = [];
+      snap.docs.forEach(function (d) {
+        var v = d.data();
+        if (v && v.label) items.push({ label: String(v.label), name: String(v.name || ""), at: v.at || 0 });
+      });
+      items.sort(function (a, b) { return a.at - b.at; });
+      BO.items = items;
+      boPaint();
+    }, function () { boPaint(); });
+  }
+  boRow.addEventListener("click", function () {
+    if (env.readOnly) { toast(MSG_VIEW_ONLY); return; }
+    BO.open = !BO.open;
+    boPaint();
+    if (BO.open) {
+      if (!boName.value) boName.value = mem.person;
+      try { boUl.scrollIntoView({ block: "center" }); } catch (e) {}
+      setTimeout(function () { (boName.value ? boWhat : boName).focus({ preventScroll: true }); }, 60);
+    }
+  });
+  document.getElementById("bowls-other-cancel").addEventListener("click", function () { BO.open = false; boPaint(); });
+  boForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var name = boName.value.trim(), what = boWhat.value.trim();
+    if (!name) { boName.focus(); toast("Add your name first."); return; }
+    if (!what) { boWhat.focus(); toast("Type what you are bringing."); return; }
+    if (!env.db || BO.busy) return;
+    BO.busy = true; boPaint();
+    try {
+      var doc = { label: what, name: name, by: token, at: Date.now() };
+      if (env.myId) doc.byUser = env.myId;
+      await env.db.collection("bowl-other").add(doc);
+      remember("person", name);
+      BO.open = false;
+      boWhat.value = "";
+      toast("Thanks, " + name + ". You are bringing " + what.toLowerCase() + ".");
+    } catch (err) {
+      toast("That did not save. Check your connection and try again.");
+    } finally {
+      BO.busy = false; boPaint();
+    }
+  });
+  init();
+})();
+</script>
