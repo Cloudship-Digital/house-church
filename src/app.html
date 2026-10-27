@@ -179,6 +179,12 @@ li.taken { background: var(--taken); }
 .fine { margin: 0; font-size: 0.875rem; color: var(--muted); }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .panel p { margin: 0; color: var(--muted); max-width: 48ch; }
+.login { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.login-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 6px 6px 12px; min-height: 48px; }
+.login-row .k { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); display: block; }
+.login-row > span { flex: 1 1 240px; min-width: 0; }
+.login-row .v { font-weight: 600; overflow-wrap: anywhere; user-select: all; }
+a.btn.watch { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label, .field .cap { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .field select { flex: none; width: 100%; }
@@ -258,10 +264,13 @@ details[open] summary::after { content: "\2212"; }
   min-height: 58px;
   padding: 6px 4px;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
   cursor: pointer;
 }
+.tab span { text-wrap: balance; }
 .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab[aria-current="page"] { color: var(--accent); }
 .tab[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
@@ -348,6 +357,27 @@ details[open] summary::after { content: "\2212"; }
     </header>
     <p class="note" id="note-kids" hidden></p>
     <ul id="list-kids"></ul>
+  </section>
+
+  <section class="view" id="view-watch" hidden>
+    <header>
+      <h1 tabindex="-1">Watch the video</h1>
+      <p class="lede">You may need to login again if it shows you need to make a purchase.</p>
+    </header>
+    <div class="panel">
+      <div class="login">
+        <div class="login-row"><span><span class="k">Login</span><span class="v" id="watch-login">info@riverhouseministries.com</span></span><button type="button" class="btn quiet" data-copy="watch-login">Copy</button></div>
+        <div class="login-row"><span><span class="k">Password</span><span class="v" id="watch-pass">SoulTrain2026!</span></span><button type="button" class="btn quiet" data-copy="watch-pass">Copy</button></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:12px">
+      <span class="cap" id="watch-when"></span>
+      <h2 id="watch-title" style="margin:0;font-family:var(--font-display);font-size:1.5rem;line-height:1.15"></h2>
+      <p id="watch-sub"></p>
+      <a class="btn watch" id="watch-link" href="#" target="_blank" rel="noopener">Watch on Vimeo</a>
+    </div>
+    <h2 class="cap" style="margin:20px 0 8px">Coming up</h2>
+    <ul id="watch-next"></ul>
   </section>
 
   <section class="view" id="view-ideas" hidden>
@@ -491,6 +521,10 @@ details[open] summary::after { content: "\2212"; }
     <button type="button" class="tab" id="tab-kids">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.700 6 6"/><circle cx="17.500" cy="9.500" r="2.200"/><path d="M16.500 14.200c2.700.2 4.500 2.200 4.500 5.300"/></svg>
       <span>Kids</span>
+    </button>
+    <button type="button" class="tab" id="tab-watch">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.500-2.500z"/></svg>
+      <span>Watch Video</span>
     </button>
   </div>
 </nav>
@@ -916,6 +950,59 @@ details[open] summary::after { content: "\2212"; }
     onClaimed: function (item) { openSides(item.id); },
     onChange: function () { renderSides(); }
   });
+
+  /* ---------- watch video: one video per house church night, switching on the Friday after the previous night ---------- */
+  var VIDEOS = [
+    { title: "Family Sin Patterns", url: "https://vimeo.com/ondemand/2025soulcarevideos/1123693276?autoplay=1" },
+    { title: "Forgiveness", url: "https://vimeo.com/ondemand/2025soulcarevideos/1123694442?autoplay=1" },
+    { title: "Healing Wounds", url: "https://vimeo.com/ondemand/2025soulcarevideos/1123695454?autoplay=1" },
+    { title: "Fear", url: "https://vimeo.com/ondemand/2025soulcarevideos/1123696940?autoplay=1" },
+    { title: "Deliverance (Part 1)", url: "https://vimeo.com/ondemand/2025soulcarevideos/1123698023?autoplay=1" },
+    { title: "Deliverance (Part 2)", url: "https://vimeo.com/ondemand/2025soulcarevideos/1123699286?autoplay=1" }
+  ];
+  var VIDEO_FIRST_NIGHT = "2026-10-29"; /* the first night that has a video; the Oct 15 night was yumm bowls */
+  var videoNights = allIso.filter(function (iso) { return iso >= VIDEO_FIRST_NIGHT && !SKIP_DATES[iso]; });
+  function nightLabel(iso) {
+    return new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+  }
+  (function () {
+    var cur = 0;
+    for (var v = 0; v < videoNights.length; v++) { if (todayIso <= videoNights[v]) { cur = v; break; } cur = videoNights.length; }
+    var pastEnd = cur >= VIDEOS.length || cur >= videoNights.length;
+    var idx = pastEnd ? VIDEOS.length - 1 : cur;
+    var vid = VIDEOS[idx];
+    document.getElementById("watch-title").textContent = vid.title;
+    document.getElementById("watch-link").href = vid.url;
+        document.getElementById("watch-when").textContent = pastEnd ? "Latest video" : "For house church on " + nightLabel(videoNights[idx]);
+    document.getElementById("watch-sub").textContent = pastEnd ? "The next video has not been scheduled yet." : "Shown until house church on " + nightLabel(videoNights[idx]) + ", then it switches to the next video on Friday.";
+    var ul = document.getElementById("watch-next");
+    for (var n = idx + 1; n < VIDEOS.length; n++) {
+      var li = document.createElement("li");
+      var row = document.createElement("div");
+      row.className = "row";
+      row.setAttribute("aria-disabled", "true");
+      var lab = document.createElement("span");
+      lab.className = "label";
+      lab.textContent = VIDEOS[n].title;
+      var st = document.createElement("span");
+      st.className = "status";
+      st.textContent = n < videoNights.length ? nightLabel(videoNights[n]) : "Date to be set";
+      row.appendChild(lab);
+      row.appendChild(st);
+      li.appendChild(row);
+      ul.appendChild(li);
+    }
+    if (idx + 1 >= VIDEOS.length) { ul.hidden = true; ul.previousElementSibling.hidden = true; }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-copy]"), function (b) {
+      b.addEventListener("click", function () {
+        var text = document.getElementById(b.getAttribute("data-copy")).textContent;
+        var done = function () { toast("Copied."); };
+        try {
+          navigator.clipboard.writeText(text).then(done, function () { toast("Press and hold the text to copy it."); });
+        } catch (e) { toast("Press and hold the text to copy it."); }
+      });
+    });
+  })();
 
   /* ---------- kids: tap a Thursday, then two helper bars open (same dates as the food sign-ups) ---------- */
   var KIDS = { claims: {}, loaded: false, openId: null, busy: false, rows: {} };
@@ -1959,8 +2046,8 @@ details[open] summary::after { content: "\2212"; }
   });
 
   /* ---------- screens and tab bar ---------- */
-  var VIEWS = { bowls: document.getElementById("view-bowls"), mains: document.getElementById("view-mains"), ideas: document.getElementById("view-ideas"), kids: document.getElementById("view-kids"), sides: document.getElementById("view-sides") };
-  var TABS = { bowls: document.getElementById("tab-bowls"), mains: document.getElementById("tab-mains"), ideas: document.getElementById("tab-ideas"), sides: document.getElementById("tab-sides"), kids: document.getElementById("tab-kids") };
+  var VIEWS = { bowls: document.getElementById("view-bowls"), mains: document.getElementById("view-mains"), ideas: document.getElementById("view-ideas"), kids: document.getElementById("view-kids"), watch: document.getElementById("view-watch"), sides: document.getElementById("view-sides") };
+  var TABS = { bowls: document.getElementById("tab-bowls"), mains: document.getElementById("tab-mains"), ideas: document.getElementById("tab-ideas"), sides: document.getElementById("tab-sides"), kids: document.getElementById("tab-kids"), watch: document.getElementById("tab-watch") };
   var bowlsLive = todayIso <= "2026-10-15";
   if (!bowlsLive) TABS.bowls.style.display = "none";
   function show(which, quiet) {
