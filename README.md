@@ -6,7 +6,7 @@ Shared sign-up app for the every-other-Thursday house church dinner: Oct 15 yumm
 - `src/app.html` is the app itself (one file: HTML, CSS, JavaScript). **Edit this.**
 - `build.py` turns it into `dist/cloudflare/worker.js` (page + API in one Worker file). **Always run it after editing, and commit the result.**
 - `cloudflare/backend.js` (D1 storage and API) and `cloudflare/shim.js` (page-side helper) are the other inputs to the build.
-- `wrangler.toml.example` is the config Cloudflare needs for Git deploys (see below).
+- `wrangler.toml` is the Cloudflare deploy config (Worker name, D1 binding).
 
 ## Update workflow
 1. Edit `src/app.html`.
@@ -15,7 +15,7 @@ Shared sign-up app for the every-other-Thursday house church dinner: Oct 15 yumm
 
 ## Cloudflare setup
 - D1 database `house-church` (empty; the Worker creates its tables on first request), bound to the Worker with the variable name exactly `DB`.
-- Git deploy: Worker > Settings > Builds > Connect to Git, repo `Cloudship-Digital/house-church`, branch `main`, no build command, deploy command `npx wrangler deploy`. Copy `wrangler.toml.example` to `wrangler.toml`, fill in the Worker name and D1 database id, and commit it.
+- Git deploy: Worker > Settings > Builds > Connect to Git, repo `Cloudship-Digital/house-church`, branch `main`, no build command, deploy command `npx wrangler deploy`..
 - No passcode is used. Optional: add a secret named `GROUP_CODE` to require one for changes.
 
 ## Data model
